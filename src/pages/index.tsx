@@ -28,8 +28,12 @@ export default function Home() {
       if (!res.ok) throw new Error(data.error || "Unknown error");
 
       setOutput(data.text || "No transcription returned.");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -81,16 +85,16 @@ export default function Home() {
             <div className="prose prose-lg prose-slate max-w-none">
               <ReactMarkdown 
                 components={{
-                  h1: ({node, ...props}) => <h3 className="text-lg font-semibold mb-3" {...props} />,
-                  h2: ({node, ...props}) => <h4 className="text-base font-semibold mb-2" {...props} />,
-                  h3: ({node, ...props}) => <h5 className="text-sm font-medium mb-2" {...props} />,
-                  h4: ({node, ...props}) => <h6 className="text-sm font-medium mb-2" {...props} />,
-                  h5: ({node, ...props}) => <h6 className="text-xs font-medium mb-1" {...props} />,
-                  h6: ({node, ...props}) => <h6 className="text-xs font-medium mb-1" {...props} />,
-                  p: ({node, ...props}) => <p className="text-base mb-3" {...props} />,
-                  ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-3" {...props} />,
-                  ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-3" {...props} />,
-                  li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                  h1: ({...props}) => <h3 className="text-lg font-semibold mb-3" {...props} />,
+                  h2: ({...props}) => <h4 className="text-base font-semibold mb-2" {...props} />,
+                  h3: ({...props}) => <h5 className="text-sm font-medium mb-2" {...props} />,
+                  h4: ({...props}) => <h6 className="text-sm font-medium mb-2" {...props} />,
+                  h5: ({...props}) => <h6 className="text-xs font-medium mb-1" {...props} />,
+                  h6: ({...props}) => <h6 className="text-xs font-medium mb-1" {...props} />,
+                  p: ({...props}) => <p className="text-base mb-3" {...props} />,
+                  ul: ({...props}) => <ul className="list-disc pl-4 mb-3" {...props} />,
+                  ol: ({...props}) => <ol className="list-decimal pl-4 mb-3" {...props} />,
+                  li: ({...props}) => <li className="mb-1" {...props} />,
                 }}
               >
                 {output}
