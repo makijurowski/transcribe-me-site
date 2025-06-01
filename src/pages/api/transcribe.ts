@@ -30,8 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   const buffer = fs.readFileSync(uploadedFile.filepath);
   const base64Image = buffer.toString("base64");
-
   const imagePayload = `data:${uploadedFile.mimetype};base64,${base64Image}`;
+  console.log('Sending to OpenAI:', imagePayload.substring(0, 100) + '...');
 
   const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -40,14 +40,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4-vision-preview",
+      model: "gpt-4.1",
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Please transcribe this handwritten note. If it looks like a list or journal, format it with Markdown.",
+              text: "Please transcribe this handwritten note and use Markdown formatting. Please don't include any other text, and make sure to designate any date or title.",
             },
             {
               type: "image_url",
@@ -63,7 +63,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 
   const json = await openaiRes.json();
-  const text = json.choices?.[0]?.message?.content;
+  console.log('OpenAI response:', json);
+  if (!json.choices?.[0]?.message?.content) {
+    return res.status(400).json({ error: "No transcription received from OpenAI" });
+  }
 
-  res.status(200).json({ text });
+  return res.status(200).json({ 
+    text: json.choices[0].message.content 
+  })
 }
