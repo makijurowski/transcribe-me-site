@@ -38,7 +38,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 px-6 py-10">
       <div className="max-w-3xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold text-center">📝 TranscibeMe</h1>
+        <h1 className="text-3xl font-bold text-center">📝 TranscribeMe</h1>
 
         <div className="space-y-4">
           <input
