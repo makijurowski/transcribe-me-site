@@ -75,11 +75,26 @@ export default function Home() {
           {error && <p className="text-red-600">⚠️ {error}</p>}
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow space-y-4">
-          <h2 className="text-xl font-semibold">🧾 Transcription Preview</h2>
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">🧾 Transcription Preview</h2>
           {output ? (
-            <div className="prose max-w-none prose-blue">
-              <ReactMarkdown>{output}</ReactMarkdown>
+            <div className="prose prose-lg prose-slate max-w-none">
+              <ReactMarkdown 
+                components={{
+                  h1: ({node, ...props}) => <h3 className="text-lg font-semibold mb-3" {...props} />,
+                  h2: ({node, ...props}) => <h4 className="text-base font-semibold mb-2" {...props} />,
+                  h3: ({node, ...props}) => <h5 className="text-sm font-medium mb-2" {...props} />,
+                  h4: ({node, ...props}) => <h6 className="text-sm font-medium mb-2" {...props} />,
+                  h5: ({node, ...props}) => <h6 className="text-xs font-medium mb-1" {...props} />,
+                  h6: ({node, ...props}) => <h6 className="text-xs font-medium mb-1" {...props} />,
+                  p: ({node, ...props}) => <p className="text-base mb-3" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-3" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-3" {...props} />,
+                  li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                }}
+              >
+                {output}
+              </ReactMarkdown>
             </div>
           ) : (
             <p className="text-gray-500 italic">No output yet.</p>
