@@ -85,7 +85,7 @@ export default function Home() {
     
     <div>
       {files.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-2">
+        <div className="bg-gray-50 rounded-lg p-1">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Files:</h3>
           <ul className="text-sm text-gray-500 space-y-1">
             {files.map((file, idx) => (
@@ -107,7 +107,7 @@ export default function Home() {
               {outputs.map((output, index) => (
                 <div key={index} className="border-t pt-4 first:border-t-0 first:pt-0 relative">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-medium text-gray-500">{output.filename}</h3>
+                    <h3 className="text-gray-500 font-semibold">{output.filename}</h3>
                     <button
                       onClick={() => downloadText(output.filename, output.text)}
                       className="text-gray-500 hover:text-gray-700 transition-colors p-2"
