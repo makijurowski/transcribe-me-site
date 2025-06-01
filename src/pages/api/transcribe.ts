@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import formidable from "formidable";
+import { IncomingForm, Fields, Files } from "formidable";
 import fs from "fs";
-import { Readable } from "stream";
+// import { Readable } from "stream";
 
 export const config = {
   api: {
@@ -12,19 +12,22 @@ export const config = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const data: any = await new Promise((resolve, reject) => {
-    const form = new formidable.IncomingForm({ multiples: true });
-
+  const data: { fields: Fields; files: Files } = await new Promise((resolve, reject) => {
+    const form = new IncomingForm({ multiples: true, keepExtensions: true });
+  
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
-      resolve({ fields, files });
+      else resolve({ fields, files });
     });
   });
 
-  const uploadedFile = Array.isArray(data.files.files)
-    ? data.files.files[0]
-    : data.files.files;
-
+  const uploaded = data.files?.files;
+  const uploadedFile = Array.isArray(uploaded) ? uploaded[0] : uploaded;
+  
+  if (!uploadedFile || !uploadedFile.filepath) {
+    return res.status(400).json({ error: "No valid file uploaded." });
+  }
+  
   const buffer = fs.readFileSync(uploadedFile.filepath);
   const base64Image = buffer.toString("base64");
 
