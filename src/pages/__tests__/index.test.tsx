@@ -28,7 +28,7 @@ describe('Home Page', () => {
     const user = userEvent.setup()
     render(<Home />)
     
-    const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/file/i) || screen.getByRole('textbox', { hidden: true })
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     
     await user.upload(fileInput, file)
@@ -41,7 +41,7 @@ describe('Home Page', () => {
     const user = userEvent.setup()
     render(<Home />)
     
-    const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/file/i) || screen.getByRole('textbox', { hidden: true })
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     
     await user.upload(fileInput, file)
@@ -64,7 +64,7 @@ describe('Home Page', () => {
     const user = userEvent.setup()
     render(<Home />)
     
-    const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/file/i) || screen.getByRole('textbox', { hidden: true })
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     
     await user.upload(fileInput, file)
@@ -94,7 +94,7 @@ describe('Home Page', () => {
     const user = userEvent.setup()
     render(<Home />)
     
-    const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/file/i) || screen.getByRole('textbox', { hidden: true })
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     
     await user.upload(fileInput, file)
@@ -120,7 +120,7 @@ describe('Home Page', () => {
     const user = userEvent.setup()
     render(<Home />)
     
-    const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/file/i) || screen.getByRole('textbox', { hidden: true })
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
     
     await user.upload(fileInput, file)
