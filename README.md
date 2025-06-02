@@ -110,12 +110,6 @@ Run tests with coverage report:
 npm run test:coverage
 ```
 
-Run tests with coverage report:
-
-```bash
-npm run test:coverage
-```
-
 Run only API tests:
 
 ```bash
