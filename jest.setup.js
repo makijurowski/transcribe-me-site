@@ -1,9 +1,40 @@
 import '@testing-library/jest-dom'
 
-// Polyfill TextEncoder/TextDecoder for Node.js environment
+// Polyfill for Node.js environment
 const { TextEncoder, TextDecoder } = require('util')
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  disconnect() {}
+  observe() {}
+  unobserve() {}
+}
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  constructor() {}
+  disconnect() {}
+  observe() {}
+  unobserve() {}
+}
+
+// Mock matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+})
 
 // Mock next/router
 jest.mock('next/router', () => ({
@@ -31,73 +62,36 @@ jest.mock('next/router', () => ({
 // Mock fetch globally
 global.fetch = jest.fn()
 
-// Mock URL.createObjectURL
+// Mock URL APIs
 global.URL.createObjectURL = jest.fn(() => 'mocked-url')
 global.URL.revokeObjectURL = jest.fn()
 
-// Mock document methods
+// Mock DOM methods for download functionality
 const mockElement = {
   href: '',
   download: '',
   click: jest.fn(),
+  style: {},
 }
 
 Object.defineProperty(document, 'createElement', {
   value: jest.fn(() => mockElement),
+  writable: true,
 })
 
 Object.defineProperty(document.body, 'appendChild', {
   value: jest.fn(),
+  writable: true,
 })
 
 Object.defineProperty(document.body, 'removeChild', {
   value: jest.fn(),
-})
-
-// Mock window.getComputedStyle for React DOM
-Object.defineProperty(window, 'getComputedStyle', {
-  value: () => ({
-    getPropertyValue: () => '',
-  }),
-})
-
-// Mock CSS properties that React DOM checks for
-Object.defineProperty(window, 'CSS', {
-  value: {
-    supports: () => false,
-  },
-})
-
-// Mock CSS animation properties for React DOM
-Object.defineProperty(window, 'CSSStyleDeclaration', {
-  value: function() {
-    return {
-      WebkitAnimation: '',
-      animation: '',
-    }
-  }
-})
-
-// Set up a basic DOM environment
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-})
-
-// Mock HTMLElement.prototype for CSS animations
-Object.defineProperty(HTMLElement.prototype, 'style', {
-  value: {
-    WebkitAnimation: '',
-    animation: '',
-  },
   writable: true,
 })
+
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  warn: jest.fn(),
+  error: jest.fn(),
+}

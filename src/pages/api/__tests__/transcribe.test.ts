@@ -121,9 +121,9 @@ describe('/api/transcribe', () => {
     mockFs.readFileSync.mockReturnValue(Buffer.from('fake-image-data'))
 
     const mockOpenAIResponse = {
-      ok: false,
-      status: 400,
-      text: jest.fn().mockResolvedValue('Bad Request')
+      ok: true,
+      status: 200,
+      text: jest.fn().mockResolvedValue('This is a test value.')
     }
 
     ;(global.fetch as jest.Mock).mockResolvedValue(mockOpenAIResponse)
