@@ -1,5 +1,5 @@
 import { createMocks } from 'node-mocks-http';
-import handler from '../../../services/api/transcribe';
+import handler from '../../../pages/api/transcribe';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
 
