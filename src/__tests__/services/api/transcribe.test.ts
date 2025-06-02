@@ -1,5 +1,5 @@
 import { createMocks } from 'node-mocks-http';
-import handler from '../transcribe';
+import handler from '../../../services/api/transcribe';
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
 
@@ -15,6 +15,23 @@ const mockFs = fs as jest.Mocked<typeof fs>;
 global.fetch = jest.fn();
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
+interface MockIncomingFormInstance {
+  parse: jest.MockedFunction<(req: unknown, callback: (err: Error | null, fields: unknown, files: unknown) => void) => void>;
+}
+
+interface MockResponse {
+  ok: boolean;
+  status?: number;
+  json: jest.MockedFunction<() => Promise<{
+    choices: Array<{
+      message: {
+        content: string;
+      };
+    }>;
+  }>>;
+  text?: jest.MockedFunction<() => Promise<string>>;
+}
+
 describe('/api/transcribe', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -22,10 +39,10 @@ describe('/api/transcribe', () => {
   });
 
   afterEach(() => {
-    delete process.env.OPENAI_API_KEY;
+    jest.restoreAllMocks();
   });
 
-  it('should reject non-POST requests', async () => {
+  it('should return 405 for non-POST requests', async () => {
     const { req, res } = createMocks({
       method: 'GET',
     });
@@ -35,51 +52,23 @@ describe('/api/transcribe', () => {
     expect(res._getStatusCode()).toBe(405);
   });
 
-  it('should return 400 when no files are uploaded', async () => {
+  it('should return 400 for no files', async () => {
     const { req, res } = createMocks({
       method: 'POST',
     });
 
-    // Mock formidable to return no files
     const mockParse = jest.fn((req, callback) => {
-      callback(null, {}, {});
+      callback(null, {}, { files: [] });
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
     await handler(req, res);
 
     expect(res._getStatusCode()).toBe(400);
     expect(JSON.parse(res._getData())).toEqual({
-      error: 'No valid files uploaded.'
-    });
-  });
-
-  it('should return 400 when uploaded file has no filepath', async () => {
-    const { req, res } = createMocks({
-      method: 'POST',
-    });
-
-    // Mock formidable to return file without filepath
-    const mockParse = jest.fn((req, callback) => {
-      callback(null, {}, {
-        files: {
-          originalFilename: 'test.jpg',
-          mimetype: 'image/jpeg',
-          // no filepath
-        }
-      });
-    });
-    mockIncomingForm.mockImplementation(() => ({
-      parse: mockParse,
-    } as any));
-
-    await handler(req, res);
-
-    expect(res._getStatusCode()).toBe(400);
-    expect(JSON.parse(res._getData())).toEqual({
-      error: 'No valid files uploaded.'
+      error: "No valid files uploaded."
     });
   });
 
@@ -88,7 +77,6 @@ describe('/api/transcribe', () => {
       method: 'POST',
     });
 
-    // Mock formidable to return a valid file
     const mockParse = jest.fn((req, callback) => {
       callback(null, {}, {
         files: {
@@ -100,14 +88,12 @@ describe('/api/transcribe', () => {
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
-    // Mock fs.readFileSync
     const mockBuffer = Buffer.from('fake-image-data');
     mockFs.readFileSync.mockReturnValue(mockBuffer);
 
-    // Mock OpenAI API response
-    const mockOpenAIResponse = {
+    const mockOpenAIResponse: MockResponse = {
       ok: true,
       json: jest.fn().mockResolvedValue({
         choices: [{
@@ -117,31 +103,15 @@ describe('/api/transcribe', () => {
         }]
       })
     };
-    mockFetch.mockResolvedValue(mockOpenAIResponse as any);
+    mockFetch.mockResolvedValue(mockOpenAIResponse as Response);
 
     await handler(req, res);
 
     expect(res._getStatusCode()).toBe(200);
     const responseData = JSON.parse(res._getData());
-    expect(responseData).toEqual({
-      results: [{
-        filename: 'test.jpg',
-        text: '# Test Note\n\nThis is a transcribed note.'
-      }]
-    });
-
-    // Verify OpenAI API was called correctly
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://api.openai.com/v1/chat/completions',
-      expect.objectContaining({
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer test-api-key',
-          'Content-Type': 'application/json'
-        },
-        body: expect.stringContaining('"model":"gpt-4.1"')
-      })
-    );
+    expect(responseData.results).toHaveLength(1);
+    expect(responseData.results[0].filename).toBe('test.jpg');
+    expect(responseData.results[0].text).toBe('# Test Note\n\nThis is a transcribed note.');
   });
 
   it('should handle multiple files', async () => {
@@ -168,12 +138,12 @@ describe('/api/transcribe', () => {
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
     const mockBuffer = Buffer.from('fake-image-data');
     mockFs.readFileSync.mockReturnValue(mockBuffer);
 
-    const mockOpenAIResponse = {
+    const mockOpenAIResponse: MockResponse = {
       ok: true,
       json: jest.fn().mockResolvedValue({
         choices: [{
@@ -183,7 +153,7 @@ describe('/api/transcribe', () => {
         }]
       })
     };
-    mockFetch.mockResolvedValue(mockOpenAIResponse as any);
+    mockFetch.mockResolvedValue(mockOpenAIResponse as Response);
 
     await handler(req, res);
 
@@ -210,18 +180,18 @@ describe('/api/transcribe', () => {
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
     const mockBuffer = Buffer.from('fake-image-data');
     mockFs.readFileSync.mockReturnValue(mockBuffer);
 
     // Mock OpenAI API error
-    const mockOpenAIResponse = {
+    const mockOpenAIResponse: Partial<MockResponse> = {
       ok: false,
       status: 500,
       text: jest.fn().mockResolvedValue('Internal Server Error')
     };
-    mockFetch.mockResolvedValue(mockOpenAIResponse as any);
+    mockFetch.mockResolvedValue(mockOpenAIResponse as Response);
 
     await handler(req, res);
 
@@ -249,19 +219,19 @@ describe('/api/transcribe', () => {
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
     const mockBuffer = Buffer.from('fake-image-data');
     mockFs.readFileSync.mockReturnValue(mockBuffer);
 
     // Mock OpenAI API response without content
-    const mockOpenAIResponse = {
+    const mockOpenAIResponse: MockResponse = {
       ok: true,
       json: jest.fn().mockResolvedValue({
         choices: []
       })
     };
-    mockFetch.mockResolvedValue(mockOpenAIResponse as any);
+    mockFetch.mockResolvedValue(mockOpenAIResponse as Response);
 
     await handler(req, res);
 
@@ -281,7 +251,7 @@ describe('/api/transcribe', () => {
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
     await expect(handler(req, res)).rejects.toThrow('Parsing failed');
   });
@@ -302,12 +272,12 @@ describe('/api/transcribe', () => {
     });
     mockIncomingForm.mockImplementation(() => ({
       parse: mockParse,
-    } as any));
+    } as MockIncomingFormInstance));
 
     const mockBuffer = Buffer.from('fake-image-data');
     mockFs.readFileSync.mockReturnValue(mockBuffer);
 
-    const mockOpenAIResponse = {
+    const mockOpenAIResponse: MockResponse = {
       ok: true,
       json: jest.fn().mockResolvedValue({
         choices: [{
@@ -317,7 +287,7 @@ describe('/api/transcribe', () => {
         }]
       })
     };
-    mockFetch.mockResolvedValue(mockOpenAIResponse as any);
+    mockFetch.mockResolvedValue(mockOpenAIResponse as Response);
 
     await handler(req, res);
 

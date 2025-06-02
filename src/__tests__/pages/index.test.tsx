@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Home from '../index';
+import Home from '../../pages/index';
+import '@testing-library/jest-dom';
 
 // Mock ReactMarkdown
 jest.mock('react-markdown', () => {
@@ -12,6 +13,10 @@ jest.mock('react-markdown', () => {
 // Mock fetch globally
 global.fetch = jest.fn();
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+
+// Mock URL.createObjectURL and revokeObjectURL
+global.URL.createObjectURL = jest.fn(() => 'mock-object-url');
+global.URL.revokeObjectURL = jest.fn();
 
 describe('Home Component', () => {
   beforeEach(() => {

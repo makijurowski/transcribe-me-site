@@ -2,7 +2,7 @@
 
 **Transform your handwritten notes into digital text instantly!**
 
-TranscribeMe is a powerful, AI-driven web application that converts your handwritten notes from images into clean, formatted digital text. Powered by OpenAI's GPT-4.1 vision capabilities, it intelligently reads your handwriting and outputs beautifully formatted Markdown that's ready to use.
+TranscribeMe is a powerful, secure, and AI-driven web application that converts your handwritten notes from images into clean, formatted digital text. Powered by OpenAI's GPT-4.1 vision capabilities, it intelligently reads your handwriting and outputs beautifully formatted Markdown that's ready to use.
 
 ## Why TranscribeMe?
 
@@ -73,19 +73,6 @@ npm run dev
 
 Navigate to [http://localhost:3000](http://localhost:3000) and start transcribing!
 
-## Project Structure
-
-```bash
-src/
-├── pages/
-│ ├── api/
-│ │ └── transcribe.ts # Image transcription API endpoint
-│ └── index.tsx # Main application interface
-├── styles/
-│ └── globals.css # Global styles and Tailwind config
-└── tests/ # Test files
-```
-
 ## Testing
 
 TranscribeMe comes with a comprehensive test suite to ensure reliability and quality.
@@ -120,22 +107,6 @@ Run only component tests:
 
 ```bash
 npm test src/pages/tests/
-```
-
-### Test Structure
-
-```bash
-src/
-├── pages/
-│ ├── api/
-│ │ ├── tests/
-│ │ │ └── transcribe.test.ts # API endpoint tests
-│ │ └── transcribe.ts
-│ ├── tests/
-│ │ └── index.test.tsx # Component tests
-│ └── index.tsx
-├── jest.config.js # Jest configuration
-└── jest.setup.js # Test environment setup
 ```
 
 ## Configuration
