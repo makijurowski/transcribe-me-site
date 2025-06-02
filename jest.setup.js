@@ -21,73 +21,32 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 }
 
-// Mock matchMedia
+// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
 })
 
-// Mock next/router
-jest.mock('next/router', () => ({
-  useRouter() {
-    return {
-      route: '/',
-      pathname: '/',
-      query: {},
-      asPath: '/',
-      push: jest.fn(),
-      pop: jest.fn(),
-      reload: jest.fn(),
-      back: jest.fn(),
-      prefetch: jest.fn(),
-      beforePopState: jest.fn(),
-      events: {
-        on: jest.fn(),
-        off: jest.fn(),
-        emit: jest.fn(),
-      },
-    }
-  },
-}))
-
-// Mock fetch globally
-global.fetch = jest.fn()
-
-// Mock URL APIs
-global.URL.createObjectURL = jest.fn(() => 'mocked-url')
+// Mock URL.createObjectURL and revokeObjectURL
+global.URL.createObjectURL = jest.fn(() => 'mock-object-url')
 global.URL.revokeObjectURL = jest.fn()
 
-// Mock DOM methods for download functionality
-const mockElement = {
-  href: '',
-  download: '',
-  click: jest.fn(),
-  style: {},
+// Mock Blob
+global.Blob = class Blob {
+  constructor(parts, options) {
+    this.parts = parts
+    this.options = options
+  }
 }
-
-Object.defineProperty(document, 'createElement', {
-  value: jest.fn(() => mockElement),
-  writable: true,
-})
-
-Object.defineProperty(document.body, 'appendChild', {
-  value: jest.fn(),
-  writable: true,
-})
-
-Object.defineProperty(document.body, 'removeChild', {
-  value: jest.fn(),
-  writable: true,
-})
 
 // Mock console methods to reduce noise in tests
 global.console = {
